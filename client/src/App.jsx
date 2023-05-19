@@ -9,9 +9,20 @@ function App() {
     password: '',
   });
 
+  const handleChange = (e) => {
+      setUserInput({
+        ...userInput,
+        [e.target.name]: e.target.value
+      })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+  }
+
   return (
       <div className="container my-5">
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="name" className="form-label">Name</label>
             <input
@@ -19,6 +30,7 @@ function App() {
                 name="name"
                 id="name"
                 defaultValue={userInput.name}
+                onChange={handleChange}
             />
           </div>
           <div className="mb-3">
@@ -28,6 +40,7 @@ function App() {
                 name="email"
                 id="email"
                 defaultValue={userInput.email}
+                onChange={handleChange}
             />
           </div>
           <div className="mb-3">
@@ -37,6 +50,7 @@ function App() {
                 name="password"
                 id="password"
                 defaultValue={userInput.password}
+                onChange={handleChange}
             />
           </div>
         </form>
