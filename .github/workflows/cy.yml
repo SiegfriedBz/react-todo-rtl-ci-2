@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [17.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install Dependencies 📦
+        run: |
+          npm ci
+      - name: Check Linters 🧹
+        run: |
+          cd client
+          npm run eslint
+      - name: Build React App 🏗️
+        run: |
+          cd client
+          npm run build --if-present
+      - name: Run React Tests 🧪
+        run: |
+          CI=true npm test
+      - name: Start React App 🧘‍♂️
+        run: |
+          cd client
+          npm start & npx wait-on --time-out 60000
