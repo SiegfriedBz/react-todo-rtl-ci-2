@@ -7,6 +7,7 @@ function App() {
     name: '',
     email: '',
     password: '',
+    confirmedPassword: ''
   });
 
   const handleChange = (e) => {
@@ -50,6 +51,16 @@ function App() {
                 name="password"
                 id="password"
                 defaultValue={userInput.password}
+                onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="password-confirmation" className="form-label">Confirm Password</label>
+            <input
+                type="password"
+                name="password-confirmation"
+                id="password-confirmation"
+                defaultValue={userInput.confirmedPassword}
                 onChange={handleChange}
             />
           </div>
