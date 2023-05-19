@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import validator from 'validator'
 import './App.css';
 
 function App() {
@@ -7,18 +8,35 @@ function App() {
     name: '',
     email: '',
     password: '',
-    confirmedPassword: ''
+    confirmPassword: ''
   });
 
+  const [error, setError] = useState({
+    message: ''
+  })
+
   const handleChange = (e) => {
+    const { name, value } = e.target
       setUserInput({
         ...userInput,
-        [e.target.name]: e.target.value
+        [name]: value
       })
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if(!validator.isEmail(userInput.email)) {
+      return setError({ message: 'Please enter a valid email' })
+    }
+    if(!validator.isStrongPassword(userInput.password)) {
+      return setError({ message: 'Please enter a stronger password' })
+    }
+    if(userInput.password !== userInput.confirmPassword) {
+      return setError({ message: 'Password confirmation does not match' })
+    }
+    else {
+      setError({ message: '' })
+    }
   }
 
   return (
@@ -37,7 +55,7 @@ function App() {
           <div className="mb-3">
             <label htmlFor="email" className="form-label">Email</label>
             <input
-                type="email"
+                type="text"
                 name="email"
                 id="email"
                 defaultValue={userInput.email}
@@ -58,12 +76,19 @@ function App() {
             <label htmlFor="password-confirmation" className="form-label">Confirm Password</label>
             <input
                 type="password"
-                name="password-confirmation"
+                name="confirmPassword"
                 id="password-confirmation"
-                defaultValue={userInput.confirmedPassword}
+                defaultValue={userInput.confirmPassword}
                 onChange={handleChange}
             />
           </div>
+          <button
+              type='submit'
+              className='btn btn-primary'
+          >
+            Submit
+          </button>
+          {error?.message && <p className='alert alert-warning'>{error.message}</p>}
         </form>
       </div>
   );
