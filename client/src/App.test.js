@@ -111,7 +111,7 @@ describe('App', () => {
     expect(confirmPasswordInputElement.value).toBe(confirmPasswordInput)
   })
 
-  describe('submit button & error messages', () => {
+  describe('submit button & error handling', () => {
 
     it('should display correct error message when input email is not valid', () => {
       render(<App />)
