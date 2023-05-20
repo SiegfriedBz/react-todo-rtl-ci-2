@@ -4,7 +4,7 @@ import App from './App'
 
 describe('App', () => {
 
-  const setup = () => {
+  const getInputElements = () => {
     let submitBtnElement = screen.getByRole('button')
     let nameInputElement = screen.getByRole('textbox', { name: /name/i })
     let emailInputElement = screen.getByRole('textbox', {name: /email/i})
@@ -26,19 +26,30 @@ describe('App', () => {
     }
   }
 
-  const userTypesIntoForm = (args) => {
-    const { submitBtnElement } = setup()
+  const userTypesIntoForm = ({ name, email, password, confirmPassword }) => {
+    const { submitBtnElement, nameInputElement, emailInputElement, passwordInputElement, confirmPasswordInputElement } = getInputElements()
 
-    args.forEach(({element, input}) => {
-      userEvent.type(element, input)
-    })
+    if(name) {
+        userEvent.type(nameInputElement, name)
+    }
+    if(email) {
+        userEvent.type(emailInputElement, email)
+    }
+    if(password) {
+        userEvent.type(passwordInputElement, password)
+    }
+    if(confirmPassword) {
+        userEvent.type(confirmPasswordInputElement, confirmPassword)
+    }
 
     fireEvent.click(submitBtnElement)
+
+    return { nameInputElement, emailInputElement, passwordInputElement, confirmPasswordInputElement }
   }
 
   test('inputs should be empty on initial render', () => {
     render(<App />)
-    const { nameInputElement, emailInputElement, passwordInputElement, confirmPasswordInputElement } = setup()
+    const { nameInputElement, emailInputElement, passwordInputElement, confirmPasswordInputElement } = getInputElements()
 
     expect(nameInputElement).toBeInTheDocument()
     expect(nameInputElement.value).toBe('')
@@ -55,40 +66,48 @@ describe('App', () => {
 
   test('user should be able to input its name', () => {
     render(<App />)
-    const { nameInputElement } = setup()
+    let { nameInputElement } = getInputElements()
 
-    const userInput = 'John Doe'
-    userTypesIntoForm([{element: nameInputElement, input: userInput}])
-    expect(nameInputElement.value).toBe(userInput)
+    const nameInput = 'John Doe'
+    userTypesIntoForm({
+      name: nameInput
+    })
+    expect(nameInputElement.value).toBe(nameInput)
   })
 
   test('user should be able to input its email', () => {
     render(<App />)
-    const { emailInputElement } = setup()
+    const { emailInputElement } = getInputElements()
 
     const emailInput = 'john.doe@example.com'
 
-    userTypesIntoForm([{element: emailInputElement, input: emailInput}])
+    userTypesIntoForm({
+      email: emailInput
+    })
     expect(emailInputElement.value).toBe(emailInput)
   })
 
   test('user should be able to input its password', () => {
     render(<App />)
-    const { passwordInputElement } = setup()
+    const { passwordInputElement } = getInputElements()
 
     const passwordInput = '123456'
 
-    userTypesIntoForm([{element: passwordInputElement, input: passwordInput}])
+    userTypesIntoForm({
+      password: passwordInput
+    })
     expect(passwordInputElement.value).toBe(passwordInput)
   })
 
   test('user should be able to input its confirmed password', () => {
     render(<App />)
-    const { confirmPasswordInputElement } = setup()
+    const { confirmPasswordInputElement } = getInputElements()
 
     const confirmPasswordInput = '123456'
 
-    userTypesIntoForm([{element: confirmPasswordInputElement, input: confirmPasswordInput}])
+    userTypesIntoForm({
+      confirmPassword: confirmPasswordInput
+    })
     expect(confirmPasswordInputElement.value).toBe(confirmPasswordInput)
   })
 
@@ -96,13 +115,15 @@ describe('App', () => {
 
     it('should display correct error message when input email is not valid', () => {
       render(<App />)
-      let { emailInputElement, emailErrorMessageElement } = setup()
+      let { emailErrorMessageElement } = getInputElements()
 
       const invalidEmailInput = 'john.doe'
 
       expect(emailErrorMessageElement).not.toBeInTheDocument()
 
-      userTypesIntoForm([{element: emailInputElement, input: invalidEmailInput}])
+      userTypesIntoForm({
+        email: invalidEmailInput
+      })
 
       emailErrorMessageElement = screen.queryByText(/Please enter a valid email/i)
       expect(emailErrorMessageElement).toBeInTheDocument()
@@ -110,7 +131,7 @@ describe('App', () => {
 
     it('should display correct error message when input email is valid && password is not valid', () => {
       render(<App />)
-      let { emailInputElement, passwordInputElement, emailErrorMessageElement, weakPasswordErrorMessageElement } = setup()
+      let { emailErrorMessageElement, weakPasswordErrorMessageElement } = getInputElements()
 
       const validEmailInput = 'john.doe@example.com'
       const weakPasswordInput = '123456'
@@ -118,10 +139,10 @@ describe('App', () => {
       expect(emailErrorMessageElement).not.toBeInTheDocument()
       expect(weakPasswordErrorMessageElement).not.toBeInTheDocument()
 
-      userTypesIntoForm([
-          {element: emailInputElement, input: validEmailInput},
-        {element: passwordInputElement, input: weakPasswordInput}
-      ])
+      userTypesIntoForm({
+        email: validEmailInput,
+        password: weakPasswordInput
+      })
 
       emailErrorMessageElement = screen.queryByText(/Please enter a valid email/i)
       weakPasswordErrorMessageElement = screen.queryByText(/Please enter a stronger password/i)
@@ -131,7 +152,7 @@ describe('App', () => {
 
     it('should display correct error message when input email and password are valid && confirmed password is not valid', () => {
       render(<App />)
-      let { emailInputElement, passwordInputElement, confirmPasswordInputElement, emailErrorMessageElement, weakPasswordErrorMessageElement, invalidConfirmPasswordErrorMessageElement } = setup()
+      let { emailErrorMessageElement, weakPasswordErrorMessageElement, invalidConfirmPasswordErrorMessageElement } = getInputElements()
 
       const validEmailInput = 'john.doe@example.com'
       const validPasswordInput = 'Malta123456Yes$$$$$$$'
@@ -141,11 +162,11 @@ describe('App', () => {
       expect(weakPasswordErrorMessageElement).not.toBeInTheDocument()
       expect(invalidConfirmPasswordErrorMessageElement).not.toBeInTheDocument()
 
-      userTypesIntoForm([
-        {element: emailInputElement, input: validEmailInput},
-        {element: passwordInputElement, input: validPasswordInput},
-        {element: confirmPasswordInputElement, input: invalidConfirmPasswordInput},
-      ])
+      userTypesIntoForm({
+        email: validEmailInput,
+        password: validPasswordInput,
+        confirmPassword: invalidConfirmPasswordInput
+      })
 
       emailErrorMessageElement = screen.queryByText(/Please enter a valid email/i)
       weakPasswordErrorMessageElement = screen.queryByText(/Please enter a stronger password/i)
@@ -157,7 +178,7 @@ describe('App', () => {
 
     it('should not display any error message when input email, password and confirmed password are valid', () => {
       render(<App />)
-      let { emailInputElement, passwordInputElement, confirmPasswordInputElement, emailErrorMessageElement, weakPasswordErrorMessageElement, invalidConfirmPasswordErrorMessageElement } = setup()
+      let { emailErrorMessageElement, weakPasswordErrorMessageElement, invalidConfirmPasswordErrorMessageElement } = getInputElements()
 
       const validEmailInput = 'john.doe@example.com'
       const validPasswordInput = 'Malta123456Yes$$$$$$$'
@@ -167,11 +188,11 @@ describe('App', () => {
       expect(weakPasswordErrorMessageElement).not.toBeInTheDocument()
       expect(invalidConfirmPasswordErrorMessageElement).not.toBeInTheDocument()
 
-      userTypesIntoForm([
-        {element: emailInputElement, input: validEmailInput},
-        {element: passwordInputElement, input: validPasswordInput},
-        {element: confirmPasswordInputElement, input: validConfirmPasswordInput},
-      ])
+      userTypesIntoForm({
+          email: validEmailInput,
+          password: validPasswordInput,
+          confirmPassword: validConfirmPasswordInput
+      })
 
       emailErrorMessageElement = screen.queryByText(/Please enter a valid email/i)
       weakPasswordErrorMessageElement = screen.queryByText(/Please enter a stronger password/i)
